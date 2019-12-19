@@ -6,8 +6,10 @@ const helmet = require('helmet')
 const POKEDEX = require('./pokedex.json')
 
 const app = express()
+const morganSetting = process.env.NODE_ENV ==='production'?'tiny':'common'
 
-app.use(morgan('common'))
+
+app.use(morgan(morganSetting))
 app.use(helmet())
 app.use(cors())
 
@@ -49,7 +51,18 @@ app.get('/pokemon', function handleGetPokemon(req, res) {
   res.json(response)
 })
 
-const PORT = 8000
+app.use((error,req,res,next)=>{
+  let response 
+  if(process.env.NODE_ENV==='production'){
+    response = { error: {message:'servererror'}}
+  }
+  else{
+    response ={error}
+  }
+  res.status(500).json(response)
+})
+
+const PORT = process.env.PORT || 8000
 
 app.listen(PORT, () => {
   console.log(`Server listening at http://localhost:${PORT}`)
